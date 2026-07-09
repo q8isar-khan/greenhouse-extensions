@@ -89,6 +89,7 @@ logs/syslog_tcp:
     - transform/syslog_hostname_parsing
     - transform/syslog_esxi_vm_events
     - transform/syslog_esxi_sshd
+    - transform/syslog_semconv_normalization
     - transform/syslog_audit_classification
     - transform/truncate_message
     - attributes/cluster
@@ -104,6 +105,7 @@ logs/syslog_udp:
     - transform/syslog_hostname_parsing
     - transform/syslog_esxi_vm_events
     - transform/syslog_esxi_sshd
+    - transform/syslog_semconv_normalization
     - transform/syslog_audit_classification
     - transform/truncate_message
     - attributes/cluster
@@ -121,6 +123,7 @@ logs/syslog_tcp_tls:
     - transform/syslog_hostname_parsing
     - transform/syslog_esxi_vm_events
     - transform/syslog_esxi_sshd
+    - transform/syslog_semconv_normalization
     - transform/syslog_audit_classification
     - transform/truncate_message
     - attributes/cluster
