@@ -212,30 +212,20 @@ transform/syslog_semconv_normalization:
   log_statements:
     - context: log
       statements:
-        # syslog.identifier from appname (OTel syslog receiver output)
         - 'set(attributes["syslog.identifier"], attributes["appname"]) where attributes["appname"] != nil and attributes["syslog.identifier"] == nil'
-        # syslog.facility from facility (numeric, rfc5424/rfc3164)
         - 'set(attributes["syslog.facility"], attributes["facility"]) where attributes["facility"] != nil and attributes["syslog.facility"] == nil'
-        # syslog.facility.name from facility_keyword (string representation)
         - 'set(attributes["syslog.facility.name"], attributes["facility_keyword"]) where attributes["facility_keyword"] != nil and attributes["syslog.facility.name"] == nil'
-        # server.address from hostname (rfc5424), fallback to net.peer.name (rfc3164)
         - 'set(attributes["server.address"], attributes["hostname"]) where attributes["hostname"] != nil and attributes["server.address"] == nil'
-        - 'set(attributes["server.address"], attributes["net.peer.name"]) where attributes["net.peer.name"] != nil and attributes["server.address"] == nil'
-        # server.port from net.host.port
         - 'set(attributes["server.port"], attributes["net.host.port"]) where attributes["net.host.port"] != nil and attributes["server.port"] == nil'
-        # client.address from net.peer.ip (source IP of the syslog sender)
         - 'set(attributes["client.address"], attributes["net.peer.ip"]) where attributes["net.peer.ip"] != nil and attributes["client.address"] == nil'
-        # network.peer.address from net.peer.ip
         - 'set(attributes["network.peer.address"], attributes["net.peer.ip"]) where attributes["net.peer.ip"] != nil and attributes["network.peer.address"] == nil'
-        # network.peer.port from net.peer.port
         - 'set(attributes["network.peer.port"], attributes["net.peer.port"]) where attributes["net.peer.port"] != nil and attributes["network.peer.port"] == nil'
-        # network.local.address from net.host.ip
         - 'set(attributes["network.local.address"], attributes["net.host.ip"]) where attributes["net.host.ip"] != nil and attributes["network.local.address"] == nil'
-        # network.transport from net.transport
         - 'set(attributes["network.transport"], attributes["net.transport"]) where attributes["net.transport"] != nil and attributes["network.transport"] == nil'
-        # resource: host.name from hostname (rfc5424) or net.peer.name (rfc3164)
+        # resource: host.name for Netbox comparison
+        # RFC5424 uses hostname; RFC3164 appliances use appname
         - 'set(resource.attributes["host.name"], attributes["hostname"]) where attributes["hostname"] != nil and resource.attributes["host.name"] == nil'
-        - 'set(resource.attributes["host.name"], attributes["net.peer.name"]) where attributes["net.peer.name"] != nil and resource.attributes["host.name"] == nil'
+        - 'set(resource.attributes["host.name"], attributes["appname"]) where attributes["hostname"] == nil and attributes["appname"] != nil and resource.attributes["host.name"] == nil'
         # resource: cloud.region from region env var (set by attributes/cluster processor)
         - 'set(resource.attributes["cloud.region"], attributes["region"]) where attributes["region"] != nil and resource.attributes["cloud.region"] == nil'
 
