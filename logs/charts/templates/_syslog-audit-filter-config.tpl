@@ -18,6 +18,8 @@ SPDX-License-Identifier: Apache-2.0
   7. Hostname parsing (node name, audit source: ESXi/NSX-T/VCSA, building block)
   8. VM event parsing (ESXi reconfigure/error events)
   9. SSH login parsing (ESXi sshd accepted keyboard-interactive)
+  10. Syslog semantic convention normalization for receiver and network fields
+  11. Legacy field cleanup after semconv mapping and audit classification
 
   Field mapping (syslog → OTel receiver attributes):
     The OTel syslog receiver (both rfc5424 and rfc3164) parses syslog fields
@@ -243,6 +245,27 @@ transform/syslog_audit_classification:
         - 'set(log.attributes["audit_relevant"], "false")'
         # Mark as audit if process IS in the audit-relevant whitelist
         - 'set(log.attributes["audit_relevant"], "true") where log.attributes["appname"] != nil and IsMatch(log.attributes["appname"], "(?i)^(Hostd|NSX|procstate|shell|sshd|ssoAudit|vpxd|ssoadminserver|sudo):?$")'
+
+{{/*
+  ============================================================================
+  Legacy Field Cleanup
+  Drops duplicate legacy keys after semconv mapping and audit classification.
+  ============================================================================
+*/}}
+transform/syslog_drop_legacy_fields:
+  error_mode: ignore
+  log_statements:
+    - context: log
+      statements:
+        - 'delete_key(attributes, "appname") where attributes["syslog.identifier"] != nil'
+        - 'delete_key(attributes, "facility") where attributes["syslog.facility"] != nil'
+        - 'delete_key(attributes, "facility_keyword") where attributes["syslog.facility.name"] != nil'
+        - 'delete_key(attributes, "hostname") where attributes["server.address"] != nil'
+        - 'delete_key(attributes, "net.peer.ip") where attributes["client.address"] != nil or attributes["network.peer.address"] != nil'
+        - 'delete_key(attributes, "net.peer.port") where attributes["network.peer.port"] != nil'
+        - 'delete_key(attributes, "net.host.ip") where attributes["network.local.address"] != nil'
+        - 'delete_key(attributes, "net.host.port") where attributes["server.port"] != nil'
+        - 'delete_key(attributes, "net.transport") where attributes["network.transport"] != nil'
 {{- end }}
 
 {{- define "syslog_audit_filter.connectors" }}
