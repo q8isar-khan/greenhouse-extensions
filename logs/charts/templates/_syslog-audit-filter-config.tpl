@@ -214,7 +214,6 @@ transform/syslog_semconv_normalization:
   log_statements:
     - context: log
       statements:
-        - 'set(attributes["syslog.identifier"], attributes["appname"]) where attributes["appname"] != nil and attributes["syslog.identifier"] == nil'
         - 'set(attributes["syslog.facility"], attributes["facility"]) where attributes["facility"] != nil and attributes["syslog.facility"] == nil'
         - 'set(attributes["syslog.facility.name"], attributes["facility_keyword"]) where attributes["facility_keyword"] != nil and attributes["syslog.facility.name"] == nil'
         - 'set(attributes["server.address"], attributes["hostname"]) where attributes["hostname"] != nil and attributes["server.address"] == nil'
@@ -225,9 +224,8 @@ transform/syslog_semconv_normalization:
         - 'set(attributes["network.local.address"], attributes["net.host.ip"]) where attributes["net.host.ip"] != nil and attributes["network.local.address"] == nil'
         - 'set(attributes["network.transport"], attributes["net.transport"]) where attributes["net.transport"] != nil and attributes["network.transport"] == nil'
         # resource: host.name for Netbox comparison
-        # RFC5424 uses hostname; RFC3164 appliances use appname
+        # Only map parsed syslog hostname to avoid process-name based host identity.
         - 'set(resource.attributes["host.name"], attributes["hostname"]) where attributes["hostname"] != nil and resource.attributes["host.name"] == nil'
-        - 'set(resource.attributes["host.name"], attributes["appname"]) where attributes["hostname"] == nil and attributes["appname"] != nil and resource.attributes["host.name"] == nil'
 
 {{/*
   ============================================================================
@@ -257,7 +255,6 @@ transform/syslog_drop_legacy_fields:
   log_statements:
     - context: log
       statements:
-        - 'delete_key(attributes, "appname") where attributes["syslog.identifier"] != nil'
         - 'delete_key(attributes, "facility") where attributes["syslog.facility"] != nil'
         - 'delete_key(attributes, "facility_keyword") where attributes["syslog.facility.name"] != nil'
         - 'delete_key(attributes, "hostname") where attributes["server.address"] != nil'
