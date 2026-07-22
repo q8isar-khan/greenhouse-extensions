@@ -226,8 +226,6 @@ transform/syslog_semconv_normalization:
         # RFC5424 uses hostname; RFC3164 appliances use appname
         - 'set(resource.attributes["host.name"], attributes["hostname"]) where attributes["hostname"] != nil and resource.attributes["host.name"] == nil'
         - 'set(resource.attributes["host.name"], attributes["appname"]) where attributes["hostname"] == nil and attributes["appname"] != nil and resource.attributes["host.name"] == nil'
-        # resource: cloud.region from region env var (set by attributes/cluster processor)
-        - 'set(resource.attributes["cloud.region"], attributes["region"]) where attributes["region"] != nil and resource.attributes["cloud.region"] == nil'
 
 {{/*
   ============================================================================
