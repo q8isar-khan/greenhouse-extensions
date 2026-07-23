@@ -215,7 +215,7 @@ transform/syslog_semconv_normalization:
     - context: log
       statements:
         - 'set(attributes["syslog.facility"], attributes["facility"]) where attributes["facility"] != nil and attributes["syslog.facility"] == nil'
-        - 'set(attributes["syslog.facility.name"], attributes["facility_keyword"]) where attributes["facility_keyword"] != nil and attributes["syslog.facility.name"] == nil'
+        - 'set(attributes["syslog.facility.name"], attributes["facility_text"]) where attributes["facility_text"] != nil and attributes["syslog.facility.name"] == nil'
         - 'set(attributes["server.address"], attributes["hostname"]) where attributes["hostname"] != nil and attributes["server.address"] == nil'
         - 'set(attributes["server.port"], attributes["net.host.port"]) where attributes["net.host.port"] != nil and attributes["server.port"] == nil'
         - 'set(attributes["client.address"], attributes["net.peer.ip"]) where attributes["net.peer.ip"] != nil and attributes["client.address"] == nil'
@@ -256,7 +256,7 @@ transform/syslog_drop_legacy_fields:
     - context: log
       statements:
         - 'delete_key(attributes, "facility") where attributes["syslog.facility"] != nil'
-        - 'delete_key(attributes, "facility_keyword") where attributes["syslog.facility.name"] != nil'
+        - 'delete_key(attributes, "facility_text") where attributes["syslog.facility.name"] != nil'
         - 'delete_key(attributes, "hostname") where attributes["server.address"] != nil'
         - 'delete_key(attributes, "net.peer.ip") where attributes["client.address"] != nil or attributes["network.peer.address"] != nil'
         - 'delete_key(attributes, "net.peer.port") where attributes["network.peer.port"] != nil'
