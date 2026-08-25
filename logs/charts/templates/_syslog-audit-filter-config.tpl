@@ -54,6 +54,27 @@ transform/syslog_forwarded_by:
         - 'replace_pattern(log.attributes["message"], " forwarded_by=octobus_logstash", "") where log.attributes["forwarded_by"] == "octobus_logstash" and IsString(log.attributes["message"])'
         - 'replace_pattern(log.body, " forwarded_by=octobus_logstash", "") where log.attributes["forwarded_by"] == "octobus_logstash" and log.body != nil'
 
+transform/syslog_hostname_unknown_format:
+  error_mode: ignore
+  log_statements:
+    - context: log
+      conditions:
+        - 'attributes["syslog.format"] == "unknown"'
+        - 'body != nil'
+      statements:
+        # 1) Sequence-number format:  <PRI>NNNN: hostname ...
+        - 'merge_maps(attributes, ExtractPatterns(body, "^<\\d+>\\d+:\\s+(?P<_extracted_host>[^\\s:]+)"), "upsert") where attributes["_extracted_host"] == nil'
+        # 2) Host-first with colon:  <PRI>hostname: ...
+        - 'merge_maps(attributes, ExtractPatterns(body, "^<\\d+>(?P<_extracted_host>[^\\s:]+):"), "upsert") where attributes["_extracted_host"] == nil'
+        # 3) Timestamp then hostname
+        - 'merge_maps(attributes, ExtractPatterns(body, "^<\\d+>\\s*(?:\\w+\\s+\\d+\\s+[\\d:]+|\\d{4}\\s+\\w+\\s+\\d+\\s+[\\d:.]+)\\s+(?:UTC:?\\s+)?(?P<_extracted_host>[^\\s:]+)"), "upsert") where attributes["_extracted_host"] == nil'
+        # 4) Generic fallback:  <PRI>hostname <space> ...
+        - 'merge_maps(attributes, ExtractPatterns(body, "^<\\d+>(?P<_extracted_host>[^\\s:]+)\\s"), "upsert") where attributes["_extracted_host"] == nil'
+        # Promote to resource.host.name (only if not already set)
+        - 'set(resource.attributes["host.name"], attributes["_extracted_host"]) where attributes["_extracted_host"] != nil and resource.attributes["host.name"] == nil'
+        # Clean up the temporary field
+        - 'delete_key(attributes, "_extracted_host")'
+
 {{/*
   ============================================================================
   Extract appname from message body

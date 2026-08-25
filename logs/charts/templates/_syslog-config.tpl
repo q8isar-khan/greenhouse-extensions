@@ -500,6 +500,7 @@ logs/syslog_tcp:
     - transform/syslog_extract_appname_from_message
     - transform/syslog_user_extraction
     - transform/syslog_hostname_parsing
+    - transform/syslog_hostname_unknown_format
     - transform/syslog_nsxt
     - transform/syslog_esxi_vm_events
     - transform/syslog_esxi_sshd
@@ -520,6 +521,7 @@ logs/syslog_udp:
     - transform/syslog_extract_appname_from_message
     - transform/syslog_user_extraction
     - transform/syslog_hostname_parsing
+    - transform/syslog_hostname_unknown_format
     - transform/syslog_nsxt
     - transform/syslog_esxi_vm_events
     - transform/syslog_esxi_sshd
@@ -542,6 +544,7 @@ logs/syslog_tcp_tls:
     - transform/syslog_extract_appname_from_message
     - transform/syslog_user_extraction
     - transform/syslog_hostname_parsing
+    - transform/syslog_hostname_unknown_format
     - transform/syslog_nsxt
     - transform/syslog_esxi_vm_events
     - transform/syslog_esxi_sshd
