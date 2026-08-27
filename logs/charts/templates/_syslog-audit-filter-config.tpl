@@ -61,19 +61,19 @@ transform/syslog_hostname_unknown_format:
       conditions:
         - 'attributes["syslog.format"] == "unknown"'
         - 'body != nil'
+        - 'attributes["log.syslog.hostname"] == nil'
       statements:
         # 1) Sequence-number format:  <PRI>NNNN: hostname ...
-        - 'merge_maps(attributes, ExtractPatterns(body, "^<\\d+>\\d+:\\s+(?P<_extracted_host>[^\\s:]+)"), "upsert") where attributes["_extracted_host"] == nil'
+        - 'merge_maps(attributes, ExtractPatterns(body, "^<\\d+>\\d+:\\s+(?P<extracted_host>[^\\s:]+)"), "upsert") where attributes["extracted_host"] == nil'
         # 2) Host-first with colon:  <PRI>hostname: ...
-        - 'merge_maps(attributes, ExtractPatterns(body, "^<\\d+>(?P<_extracted_host>[^\\s:]+):"), "upsert") where attributes["_extracted_host"] == nil'
+        - 'merge_maps(attributes, ExtractPatterns(body, "^<\\d+>(?P<extracted_host>[^\\s:]+):"), "upsert") where attributes["extracted_host"] == nil'
         # 3) Timestamp then hostname
-        - 'merge_maps(attributes, ExtractPatterns(body, "^<\\d+>\\s*(?:\\w+\\s+\\d+\\s+[\\d:]+|\\d{4}\\s+\\w+\\s+\\d+\\s+[\\d:.]+)\\s+(?:UTC:?\\s+)?(?P<_extracted_host>[^\\s:]+)"), "upsert") where attributes["_extracted_host"] == nil'
+        - 'merge_maps(attributes, ExtractPatterns(body, "^<\\d+>\\s*(?:\\w+\\s+\\d+\\s+[\\d:]+|\\d{4}\\s+\\w+\\s+\\d+\\s+[\\d:.]+)\\s+(?:UTC:?\\s+)?(?P<extracted_host>[^\\s:]+)"), "upsert") where attributes["extracted_host"] == nil'
         # 4) Generic fallback:  <PRI>hostname <space> ...
-        - 'merge_maps(attributes, ExtractPatterns(body, "^<\\d+>(?P<_extracted_host>[^\\s:]+)\\s"), "upsert") where attributes["_extracted_host"] == nil'
-        # Promote to resource.host.name (only if not already set)
-        - 'set(resource.attributes["host.name"], attributes["_extracted_host"]) where attributes["_extracted_host"] != nil and resource.attributes["host.name"] == nil'
-        # Clean up the temporary field
-        - 'delete_key(attributes, "_extracted_host")'
+        - 'merge_maps(attributes, ExtractPatterns(body, "^<\\d+>(?P<extracted_host>[^\\s:]+)\\s"), "upsert") where attributes["extracted_host"] == nil'
+        # Copy to Octobus-parity field, then clean up temp field
+        - 'set(attributes["log.syslog.hostname"], attributes["extracted_host"]) where attributes["extracted_host"] != nil'
+        - 'delete_key(attributes, "extracted_host")'
 
 {{/*
   ============================================================================
